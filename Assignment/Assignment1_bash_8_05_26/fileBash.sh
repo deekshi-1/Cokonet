@@ -37,3 +37,5 @@ do
 done    
 
 #jenkins link http://192.168.220.102:8080/job/item/1/console
+username="user"
+password="1234"
