@@ -1,0 +1,27 @@
+pipeline {
+    agent any
+
+    stages{
+        stage('Build') {
+            steps { 
+                // build steps
+                sh 'echo "Building stage runs here"'
+            }
+        }
+        stage('Testing') {
+            steps {
+                sh 'echo "Testing stage runs here"'
+            }
+        }
+        stage('Deploying') {
+            steps {
+                sh 'echo "Deploying stage runs here"'
+            }
+        }
+        stage('Maintan') {
+            steps {
+                sh 'echo "Bug fix stage runs here"'
+            }
+        }
+    }
+}
