@@ -2,9 +2,9 @@ pipeline{
     agent:any
 
     environment{
-        AWS_ACCOUNT_ID = '127916168511',
-        AWS_REGION = 'ap-south-2',
-        ECR_REPOSITORY = 'node-demo-app',
+        AWS_ACCOUNT_ID = '127916168511'
+        AWS_REGION = 'ap-south-2'
+        ECR_REPOSITORY = 'node-demo-app'
         IMAGE_TAG = 'v1'
         ECR_REGISTRY = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPOSITORY}:${IMAGE_TAG}"
     }
