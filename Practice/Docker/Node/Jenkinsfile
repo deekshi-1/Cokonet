@@ -6,7 +6,8 @@ pipeline{
         AWS_REGION = 'ap-south-2'
         ECR_REPOSITORY = 'node-demo-app'
         IMAGE_TAG = 'v1'
-        ECR_REGISTRY = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPOSITORY}:${IMAGE_TAG}"
+        IMAGE_URI='${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com'
+        ECR_REGISTRY = "${IMAGE_URI}/${ECR_REPOSITORY}:${IMAGE_TAG}"
     }
     stages{
         stage("Checkout Code"){
@@ -27,7 +28,7 @@ pipeline{
             steps {
                 sh '''
                 aws ecr get-login-password --region ${AWS_REGION} | \
-                docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
+                docker login --username AWS --password-stdin ${IMAGE_URI}
                 '''
             }
         }
