@@ -6,7 +6,7 @@ pipeline{
         AWS_REGION = 'ap-south-2'
         ECR_REPOSITORY = 'node-demo-app'
         IMAGE_TAG = 'v1'
-        IMAGE_URI='${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com'
+        IMAGE_URI = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
         ECR_REGISTRY = "${IMAGE_URI}/${ECR_REPOSITORY}:${IMAGE_TAG}"
     }
     stages{
