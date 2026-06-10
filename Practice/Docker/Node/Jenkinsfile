@@ -48,6 +48,7 @@ pipeline{
             steps {
                 sh '''
                 docker tag ${ECR_REPOSITORY}:${IMAGE_TAG} ${ECR_REGISTRY}
+                docker images
                 '''
             } 
         }
