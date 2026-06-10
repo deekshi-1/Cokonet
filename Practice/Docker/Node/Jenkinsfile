@@ -44,20 +44,20 @@ pipeline{
                 '''
             }
         }
-        // stage('Tag Docker Image') {
-        //     steps {
-        //         sh '''
-        //         docker tag ${ECR_REPOSITORY}:${IMAGE_TAG} ${ECR_REGISTRY}
-        //         '''
-        //     } 
-        // }
-        // stage('Push Docker Image to ECR') {
-        //     steps {
-        //         sh '''
-        //         docker push ${ECR_REGISTRY}
-        //         '''
-        //     }
-        // }
+        stage('Tag Docker Image') {
+            steps {
+                sh '''
+                docker tag ${ECR_REPOSITORY}:${IMAGE_TAG} ${ECR_REGISTRY}
+                '''
+            } 
+        }
+        stage('Push Docker Image to ECR') {
+            steps {
+                sh '''
+                docker push ${ECR_REGISTRY}
+                '''
+            }
+        }
     }
     post{
         success {
