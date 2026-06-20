@@ -1,0 +1,68 @@
+pipeline{
+    agent any
+
+    environment{
+        AWS_ACCOUNT_ID = '127916168511'
+        AWS_REGION = 'ap-south-2'
+        ECR_REPOSITORY = 'node-demo-app'
+        IMAGE_TAG = 'v1.0.0'
+        IMAGE_URI = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
+        ECR_REGISTRY = "${IMAGE_URI}/${ECR_REPOSITORY}:${IMAGE_TAG}"
+    }
+    stages{
+        stage("Checkout Code"){
+            steps{
+                echo "checkout scm"
+            }
+        }
+        stage('Verify tools') {
+            steps {
+                sh '''
+                aws --version
+                docker --version
+                git --version
+                '''
+            }
+        }
+        stage('Login to AWS ECR') {
+            steps {
+                sh '''
+                aws ecr get-login-password --region ${AWS_REGION} | \
+                docker login --username AWS --password-stdin ${IMAGE_URI}
+                '''
+            }
+        }
+        stage('Build Docker Image') {
+            steps {
+                sh '''
+                docker build -t ${ECR_REPOSITORY}:${IMAGE_TAG} \
+                -f Practice/Docker/Node/Dockerfile \
+                Practice/Docker/Node
+                '''
+            }
+        }
+        stage('Tag Docker Image') {
+            steps {
+                sh '''
+                docker tag ${ECR_REPOSITORY}:${IMAGE_TAG} ${ECR_REGISTRY}   
+                '''
+            } 
+        }
+        stage('Push Docker Image to ECR') {
+            steps {
+                sh '''
+                docker push ${ECR_REGISTRY}
+                '''
+            }
+        }
+    }
+    post{
+        success {
+           echo "Docker image pushed successfully to AWS ECR: ${IMAGE_URI}"
+       }
+
+       failure {
+           echo "Pipeline failed. Check Jenkins console logs."
+       }
+    }
+}
