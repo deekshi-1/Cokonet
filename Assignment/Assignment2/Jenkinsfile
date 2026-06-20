@@ -2,58 +2,81 @@ pipeline {
     agent any
     
     environment {
-        DOCKER_HUB_USER = 'deekshithc1' // Replace with your Docker Hub username
+        DOCKER_HUB_USER = 'deekshithc1' 
         IMAGE_NAME      = 'python-cicd-app'
-        IMAGE_TAG       = "v1"
+        IMAGE_TAG       = 'v1'
+        CONTAINER_NAME  = 'python-app-prod'
     }
     
     stages {
-       stage('Clone') {
+        // Stage 1: Fetch code from repo
+        stage('Clone') {
             steps { 
-                git branch: 'main', url: 'https://github.com/deekshi-1/ci-cd-practice.git'
+                echo "Fetching code from repository..."
+                git branch: 'main', url: 'https://github.com/deekshi-1/Cokonet.git'
             }
         }
+        
+        // Stage 2: Building the image
         stage('Build') {
             steps {
-                sh 'echo "Building stage runs here"'
-                sh 'docker build -t ${IMAGE_NAME} .'
+                echo "Building Docker Image..."
+                // single quotes around environment variables in shell require proper Groovy interpolation or system env access
+                sh "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} -f Assignment/Assignment2/Dockerfile Assignment/Assignment2"
             }
         }
+        
+        // Stage 3: Testing if it's working fine or not
         stage('Test') {
             steps {
-                sh '''
-                    echo "Testing stage runs here"
-                    docker run -d --name test -p 5001:5000 ${IMAGE_NAME}
+                echo "Testing container startup..."
+                sh """
+                    # Spin up a temporary test container
+                    docker run -d --name test -p 5001:5000 ${IMAGE_NAME}:${IMAGE_TAG}
+                    
+                    # Give the application 10 seconds to fully initialize
                     sleep 10
+                    
+                    # Verify if the container is still running, check logs, and clean up
                     docker ps
                     docker logs test
                     docker stop test
                     docker rm -f test
-                '''
-            }
-        }
-        stage('Deploy') {
-            steps {
-                sh '''
-                    echo "Building stage runs here"
-                    docker run -d \
-                    --name ${CONTAINER_NAME} \
-                    -p 5000:5000 \
-                    ${IMAGE_NAME}
-                    sleep 300
-                    docker stop ${CONTAINER_NAME}
-                    docker rm -f ${CONTAINER_NAME}
-                '''
+                """
             }
         }
         
-        stage('Push to Docker Hub ') {
+        // Stage 4: Deploying the container locally
+        stage('Deploy') {
+            steps {
+                echo "Deploying Application..."
+                sh """
+                    # Remove existing production container if it exists to prevent naming clashes
+                    docker rm -f ${CONTAINER_NAME} || true 
+                    
+                    # Run the container permanently in detached mode with restart policy
+                    docker run -d \
+                    --name ${CONTAINER_NAME} \
+                    -p 5000:5000 \
+                    --restart always \
+                    ${IMAGE_NAME}:${IMAGE_TAG}
+                """
+            }
+        }
+        
+        // Stage 5: Push the image to Docker Hub
+        stage('Push to Docker Hub') {
             steps {
                 echo 'Pushing image to Docker Hub...'
                 script {
+                    // Uses Jenkins credentials plugin to securely log into Docker Hub
                     withDockerRegistry(credentialsId: 'docker-hub-creds', url: 'https://index.docker.io/v1/') {
-                        dockerImage.push()
-                        dockerImage.push("latest")
+                        sh """
+                            docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${DOCKER_HUB_USER}/${IMAGE_NAME}:${IMAGE_TAG}
+                            docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${DOCKER_HUB_USER}/${IMAGE_NAME}:latest
+                            docker push ${DOCKER_HUB_USER}/${IMAGE_NAME}:${IMAGE_TAG}
+                            docker push ${DOCKER_HUB_USER}/${IMAGE_NAME}:latest
+                        """
                     }
                 }
             }
@@ -62,6 +85,7 @@ pipeline {
     
     post {
         always {
+            echo "Cleaning up the Jenkins workspace..."
             cleanWs()
         }
     }
