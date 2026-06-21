@@ -1,0 +1,87 @@
+pipeline{
+    agent any
+
+    environment{
+        AWS_ACCOUNT_ID = '127916168511'
+        AWS_REGION = 'ap-south-2'
+        ECR_REPOSITORY = 'test/demo-node-app'
+        IMAGE_TAG = 'v1.0'
+        ECR_REGISTRY = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
+        IMAGE_URI = "${ECR_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG}"
+        EC2_HOST = "<EC2-IP>"
+    }
+    stages{
+        stage("Checkout Code"){
+            steps{
+                echo "checkout scm"
+            }
+        }
+        stage('Verify tools') {
+            steps {
+                sh '''
+                aws --version
+                docker --version
+                git --version
+                '''
+            }
+        }
+        stage('Login to AWS ECR') {
+            steps {
+                sh '''
+                aws ecr get-login-password --region ${AWS_REGION} | \
+                docker login --username AWS --password-stdin ${ECR_REGISTRY}
+                '''
+            }
+        }
+        stage('Build Docker Image') {
+            steps {
+                sh '''
+                docker build -t ${ECR_REPOSITORY}:${IMAGE_TAG} \
+                -f Practice/Docker/Node/Dockerfile \
+                Practice/Docker/Node
+                '''
+            }
+        }
+        stage('Tag Docker Image') {
+            steps {
+                sh '''
+                docker tag ${ECR_REPOSITORY}:${IMAGE_TAG} $IMAGE_URI
+                '''
+            } 
+        }
+        stage('Push Docker Image to ECR') {
+            steps {
+                sh '''
+                docker push ${IMAGE_URI}
+                '''
+            }
+        }
+        stage('Deploy to EC2') {
+            steps {
+                sh '''
+                aws ecr get-login-password --region $AWS_REGION | \
+                    docker login --username AWS --password-stdin $ECR_REGISTRY
+
+                docker pull ${IMAGE_URI}
+
+                docker stop demo-node-app || true
+
+                docker rm demo-node-app || true
+                docker run -d \
+                --name demo-node-app \
+                -p 3000:3000 \
+                ${ECR_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG}
+                '''
+            }
+        }
+    }
+    post{
+        success {
+           echo "Docker image pushed successfully to AWS ECR: ${IMAGE_URI}"
+       }
+
+       failure {
+           echo "Pipeline failed. Check Jenkins console logs."
+       }
+    }
+}
