@@ -1,0 +1,45 @@
+pipeline{
+    agent any
+
+    environment{
+        IMAGE_NAME= "deekshithc1/simplenodeapp"
+    }
+    stages{
+        stage("Checkout Code"){
+            steps{
+                echo "checkout scm"
+            }
+        stage("Build"){
+            steps {
+                sh '''
+                docker build -t ${IMAGE_NAME}:latest \
+                -f Practice/Docker/Node/Dockerfile \
+                Practice/Docker/Node
+                '''
+            }
+        }    
+            post{
+                always{
+                    echo "========always========"
+                }
+                success{
+                    echo "========A executed successfully========"
+                }
+                failure{
+                    echo "========A execution failed========"
+                }
+            }
+        }
+    }
+    post{
+        always{
+            echo "========always========"
+        }
+        success{
+            echo "========pipeline executed successfully ========"
+        }
+        failure{
+            echo "========pipeline execution failed========"
+        }
+    }
+}

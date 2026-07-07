@@ -1,0 +1,13 @@
+apiVersion: apps/v1
+kind: Service
+metadata:
+  name: assignment-5-service
+  namespace: node-app
+spec:
+  selector:
+    app: assignment-5
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 3000
+  type: ClusterIP
