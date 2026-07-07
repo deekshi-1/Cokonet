@@ -1,34 +1,47 @@
-pipeline{
+pipeline {
     agent any
 
-    environment{
-        IMAGE_NAME= "deekshithc1/simplenodeapp"
+    environment {
+        IMAGE_NAME = "deekshithc1/simplenodeapp"
     }
-    stages{
-        stage("Checkout Code"){
-            steps{
+
+    stages {
+        stage("Checkout Code") {
+            steps {
                 echo "checkout scm"
             }
         }
-        stage("Build"){
+        
+        stage("Build") {
             steps {
                 sh '''
                 docker build -t ${IMAGE_NAME}:latest \
-                -f Assignment/Assignment5/app/Dockerfile \
-               Assignment/Assignment5/app
+                  -f Assignment/Assignment5/app/Dockerfile \
+                  Assignment/Assignment5/app
                 '''
             }
         } 
-        }
-    post{
-        always{
+        
+        stage("DockerHub Login") {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'USER', passwordVariable: 'PASS')]) {
+                    sh '''
+                    echo $PASS | docker login -u $USER --password-stdin
+                    '''
+                }
+            }
+        }   
+    }
+    
+    post {
+        always {
             echo "========always========"
         }
-        success{
+        success {
             echo "========pipeline executed successfully ========"
         }
-        failure{
+        failure {
             echo "========pipeline execution failed========"
         }
     }
-    }
+}
