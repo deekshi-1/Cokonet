@@ -8,40 +8,66 @@ pipeline {
     stages {
         stage("Checkout Code") {
             steps {
-                echo "checkout scm"
+                checkout scm
             }
         }
-        
+
         stage("Build") {
             steps {
-                sh '''
-                docker build -t ${IMAGE_NAME}:latest \
+                sh """
+                docker build -t ${IMAGE_NAME}:${BUILD_NUMBER} \
                   -f Assignment/Assignment5/app/Dockerfile \
                   Assignment/Assignment5/app
-                '''
+                """
             }
-        } 
-        
+        }
+
         stage("DockerHub Login") {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'USER', passwordVariable: 'PASS')]) {
-                    sh '''
-                    echo $PASS | docker login -u $USER --password-stdin
-                    '''
+                    sh 'echo $PASS | docker login -u $USER --password-stdin'
                 }
             }
-        }   
+        }
+
+        stage('Push Image') {
+            steps {
+                sh """
+                docker tag ${IMAGE_NAME}:${BUILD_NUMBER} ${IMAGE_NAME}:latest
+                docker push ${IMAGE_NAME}:${BUILD_NUMBER}
+                docker push ${IMAGE_NAME}:latest
+                """
+            }
+        }
+        stage('Deploy') {
+            steps {
+                sh """
+                echo "Deploying the application..."
+                """
+            }
+        }
+        // stage('Deploy') {
+        //     steps {
+        //         withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG')]) {
+        //             sh '''
+        //             sed -i "s|dockerhubusername/assignment5:latest|$IMAGE_NAME:$BUILD_NUMBER|g" k8s/deployment.yaml
+        //             kubectl apply -f k8s/
+        //             kubectl rollout status deployment/assignment5 -n assignment5
+        //             '''
+        //         }
+        //     }
+        // }
     }
-    
+
     post {
         always {
-            echo "========always========"
+            echo "======== Pipeline Finished ========"
         }
         success {
-            echo "========pipeline executed successfully ========"
+            echo "======== Pipeline executed successfully ========"
         }
         failure {
-            echo "========pipeline execution failed========"
+            echo "======== Pipeline execution failed ========"
         }
     }
 }
