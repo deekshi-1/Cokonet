@@ -1,11 +1,11 @@
-apiVersion: apps/v1
+apiVersion: v1
 kind: Service
 metadata:
-  name: assignment-5-service
+  name: node-service
   namespace: node-app
 spec:
   selector:
-    app: assignment-5
+    app: node-app
   ports:
     - protocol: TCP
       port: 80

@@ -1,11 +1,10 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: assignment-5
+  name: node-app
   namespace: node-app
 spec:
   replicas: 2
-  
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -13,11 +12,14 @@ spec:
       maxUnavailable: 0
   selector:
     matchLabels:
-      app: assignment-5
-  
-  spec:
-    containers:
-      - name: assignment-5
-        image: assignment-5/assignment5:latest
-        ports:
-          - containerPort: 3000
+      app: node-app
+  template:
+    metadata:
+      labels:
+        app: node-app
+    spec:
+      containers:
+        - name: node-app
+          image: deekshithc1/simplenodeapp:latest
+          ports:
+            - containerPort: 3000
