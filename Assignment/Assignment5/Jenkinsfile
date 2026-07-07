@@ -9,28 +9,17 @@ pipeline{
             steps{
                 echo "checkout scm"
             }
+        }
         stage("Build"){
             steps {
                 sh '''
                 docker build -t ${IMAGE_NAME}:latest \
-                -f Practice/Docker/Node/Dockerfile \
-                Practice/Docker/Node
+                -f Assignment/Assignment5/app/Dockerfile \
+               Assignment/Assignment5/app
                 '''
             }
-        }    
-            post{
-                always{
-                    echo "========always========"
-                }
-                success{
-                    echo "========A executed successfully========"
-                }
-                failure{
-                    echo "========A execution failed========"
-                }
-            }
+        } 
         }
-    }
     post{
         always{
             echo "========always========"
@@ -42,4 +31,4 @@ pipeline{
             echo "========pipeline execution failed========"
         }
     }
-}
+    }
