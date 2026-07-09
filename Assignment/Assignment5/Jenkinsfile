@@ -3,11 +3,10 @@ pipeline {
     agent any
 
     environment {
-        IMAGE_NAME       = "deekshithc1/simplenodeapp"
-        DEPLOYMENT_NAME  = "node-app"
-        NAMESPACE        = "node-app"
+        IMAGE_NAME      = "deekshithc1/simplenodeapp"
+        DEPLOYMENT_NAME = "node-app"
+        NAMESPACE       = "node-app"
     }
-
 
     stages {
 
@@ -17,20 +16,16 @@ pipeline {
             }
         }
 
-
         stage("Secret Detection") {
             steps {
-
                 sh """
                     gitleaks detect \
                     --source . \
                     --verbose \
                     --exit-code 1
                 """
-
             }
         }
-
 
         stage("SonarQube Analysis") {
             steps {
@@ -56,7 +51,6 @@ pipeline {
             }
         }
 
-
         stage("SonarQube Quality Gate") {
             steps {
 
@@ -72,7 +66,6 @@ pipeline {
             }
         }
 
-
         stage("Build Docker Image") {
             steps {
 
@@ -85,7 +78,6 @@ pipeline {
 
             }
         }
-
 
         stage("DockerHub Login") {
             steps {
@@ -108,7 +100,6 @@ pipeline {
 
             }
         }
-
 
         stage("Push Docker Image") {
             steps {
@@ -134,46 +125,43 @@ pipeline {
             }
         }
 
-
         stage("Trivy Image Scan") {
             steps {
 
                 sh """
-
                     trivy image \
-            --severity HIGH,CRITICAL \
-            --exit-code 1 \
-            ${IMAGE_NAME}:${BUILD_NUMBER}
-
+                    --severity HIGH,CRITICAL \
+                    --exit-code 1 \
+                    ${IMAGE_NAME}:${BUILD_NUMBER}
                 """
 
             }
         }
 
-
         stage("OWASP Dependency Check") {
             steps {
 
-                dependencyCheck(
+                withCredentials([
+                    string(
+                        credentialsId: 'nvd-api-key',
+                        variable: 'NVD_KEY'
+                    )
+                ]) {
 
-                    additionalArguments: '''
-                        --scan Assignment/Assignment5/app
-                        --format XML
-                        --format HTML
-                    ''',
+                    dependencyCheck(
+                        additionalArguments: """
+                            --scan Assignment/Assignment5/app
+                            --format XML
+                            --format HTML
+                            --nvdApiKey ${NVD_KEY}
+                        """,
+                        odcInstallation: 'DP-Check'
+                    )
 
-                    odcInstallation: 'DP-Check'
-
-                )
-
-
-                dependencyCheckPublisher(
-                    pattern: '**/dependency-check-report.xml'
-                )
+                }
 
             }
         }
-
 
         stage("Deploy to Kubernetes") {
             steps {
@@ -181,7 +169,6 @@ pipeline {
                 withKubeConfig([
                     credentialsId: 'my-kubeconfig'
                 ]) {
-
 
                     sh """
 
@@ -197,12 +184,10 @@ pipeline {
                         -f Assignment/Assignment5/K8s/service.yaml
 
 
-
                         kubectl set image \
                         deployment/${DEPLOYMENT_NAME} \
                         node-app=${IMAGE_NAME}:${BUILD_NUMBER} \
                         -n ${NAMESPACE}
-
 
 
                         kubectl rollout status \
@@ -211,10 +196,8 @@ pipeline {
                         --timeout=120s
 
 
-
                         kubectl get pods \
                         -n ${NAMESPACE}
-
 
 
                         echo "Deployment completed successfully"
@@ -228,7 +211,6 @@ pipeline {
 
     }
 
-
     post {
 
         always {
@@ -237,13 +219,11 @@ pipeline {
 
         }
 
-
         success {
 
             echo "======== Pipeline executed successfully ========"
 
         }
-
 
         failure {
 
