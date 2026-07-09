@@ -24,8 +24,8 @@ pipeline {
                     sh """
                         pwd
                         ls -la
-                        ls -la Assignment5
-                        cat Assignment5/sonar-project.properties
+                        ls -la Assignment/Assignment5
+                        cat Assignment/Assignment5/sonar-project.properties
                     """
 
                     def scannerHome = tool 'SonarScanner'
@@ -34,7 +34,7 @@ pipeline {
 
                         sh """
                             ${scannerHome}/bin/sonar-scanner \
-                            -Dproject.settings=Assignment5/sonar-project.properties
+                            -Dproject.settings=Assignment/Assignment5/sonar-project.properties
                         """
 
                     }
