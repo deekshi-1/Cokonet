@@ -19,20 +19,25 @@ pipeline {
 
         stage("SonarQube Analysis") {
             steps {
-                script {
 
-                    def scannerHome = tool 'SonarScanner'
+                dir('Assignment/Assignment5') {
 
-                    withSonarQubeEnv('SonarQube') {
+                    script {
 
-                        sh """
-                            ${scannerHome}/bin/sonar-scanner \
-                            -Dproject.settings=Assignment/Assignment5/sonar-project.properties
-                        """
+                        def scannerHome = tool 'SonarScanner'
+
+                        withSonarQubeEnv('SonarQube') {
+
+                            sh """
+                                ${scannerHome}/bin/sonar-scanner
+                            """
+
+                        }
 
                     }
 
                 }
+
             }
         }
 
@@ -43,8 +48,8 @@ pipeline {
                 sh """
                     docker build \
                     -t ${IMAGE_NAME}:${BUILD_NUMBER} \
-                    -f Assignment5/app/Dockerfile \
-                    Assignment5/app
+                    -f Assignment/Assignment5/app/Dockerfile \
+                    Assignment/Assignment5/app
                 """
 
             }
@@ -109,15 +114,15 @@ pipeline {
 
 
                         kubectl apply \
-                        -f Assignment5/K8s/namespace.yaml
+                        -f Assignment/Assignment5/K8s/namespace.yaml
 
 
                         kubectl apply \
-                        -f Assignment5/K8s/development.yaml
+                        -f Assignment/Assignment5/K8s/development.yaml
 
 
                         kubectl apply \
-                        -f Assignment5/K8s/service.yaml
+                        -f Assignment/Assignment5/K8s/service.yaml
 
 
                         kubectl rollout restart \
