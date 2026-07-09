@@ -3,16 +3,31 @@ pipeline {
     agent any
 
     environment {
-        IMAGE_NAME = "deekshithc1/simplenodeapp"
-        DEPLOYMENT_NAME = "node-app"
-        NAMESPACE = "node-app"
+        IMAGE_NAME       = "deekshithc1/simplenodeapp"
+        DEPLOYMENT_NAME  = "node-app"
+        NAMESPACE        = "node-app"
     }
+
 
     stages {
 
         stage("Checkout Code") {
             steps {
                 checkout scm
+            }
+        }
+
+
+        stage("Secret Detection") {
+            steps {
+
+                sh """
+                    gitleaks detect \
+                    --source . \
+                    --verbose \
+                    --exit-code 1
+                """
+
             }
         }
 
@@ -35,6 +50,22 @@ pipeline {
                         }
 
                     }
+
+                }
+
+            }
+        }
+
+
+        stage("SonarQube Quality Gate") {
+            steps {
+
+                timeout(
+                    time: 5,
+                    unit: 'MINUTES'
+                ) {
+
+                    waitForQualityGate abortPipeline: true
 
                 }
 
@@ -79,21 +110,24 @@ pipeline {
         }
 
 
-        stage("Push Image") {
+        stage("Push Docker Image") {
             steps {
 
                 echo "Pushing Docker image to DockerHub..."
 
                 sh """
 
-                    docker tag ${IMAGE_NAME}:${BUILD_NUMBER} \
+                    docker tag \
+                    ${IMAGE_NAME}:${BUILD_NUMBER} \
                     ${IMAGE_NAME}:latest
 
 
-                    docker push ${IMAGE_NAME}:${BUILD_NUMBER}
+                    docker push \
+                    ${IMAGE_NAME}:${BUILD_NUMBER}
 
 
-                    docker push ${IMAGE_NAME}:latest
+                    docker push \
+                    ${IMAGE_NAME}:latest
 
                 """
 
@@ -101,17 +135,55 @@ pipeline {
         }
 
 
-        stage("Deploy") {
+        stage("Trivy Image Scan") {
+            steps {
+
+                sh """
+
+                    trivy image \
+                    --severity HIGH,CRITICAL \
+                    --exit-code 1 \
+                    ${IMAGE_NAME}:${BUILD_NUMBER}
+
+                """
+
+            }
+        }
+
+
+        stage("OWASP Dependency Check") {
+            steps {
+
+                dependencyCheck(
+
+                    additionalArguments: '''
+                        --scan Assignment/Assignment5/app
+                        --format XML
+                        --format HTML
+                    ''',
+
+                    odcInstallation: 'DP-Check'
+
+                )
+
+
+                dependencyCheckPublisher(
+                    pattern: '**/dependency-check-report.xml'
+                )
+
+            }
+        }
+
+
+        stage("Deploy to Kubernetes") {
             steps {
 
                 withKubeConfig([
                     credentialsId: 'my-kubeconfig'
                 ]) {
 
+
                     sh """
-
-                        echo "Deploying application..."
-
 
                         kubectl apply \
                         -f Assignment/Assignment5/K8s/namespace.yaml
@@ -125,19 +197,27 @@ pipeline {
                         -f Assignment/Assignment5/K8s/service.yaml
 
 
-                        kubectl rollout restart \
+
+                        kubectl set image \
                         deployment/${DEPLOYMENT_NAME} \
+                        node-app=${IMAGE_NAME}:${BUILD_NUMBER} \
                         -n ${NAMESPACE}
+
 
 
                         kubectl rollout status \
                         deployment/${DEPLOYMENT_NAME} \
-                        -n ${NAMESPACE}
+                        -n ${NAMESPACE} \
+                        --timeout=120s
+
 
 
                         kubectl get pods \
-                        -n ${NAMESPACE} \
-                        -l app=node-app
+                        -n ${NAMESPACE}
+
+
+
+                        echo "Deployment completed successfully"
 
                     """
 
@@ -152,17 +232,23 @@ pipeline {
     post {
 
         always {
+
             echo "======== Pipeline Finished ========"
+
         }
 
 
         success {
+
             echo "======== Pipeline executed successfully ========"
+
         }
 
 
         failure {
+
             echo "======== Pipeline execution failed ========"
+
         }
 
     }
