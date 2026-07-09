@@ -161,6 +161,7 @@ pipeline {
 
                 sh """
 
+                    mkdir -p dependency-check-report
                     dependency-check.sh \
                     --project ${IMAGE_NAME} \
                     --scan Assignment/Assignment5/app \
@@ -168,7 +169,6 @@ pipeline {
                     --format JSON \
                     --out dependency-check-report \
                     --failOnCVSS 7
-
                 """
 
             }
