@@ -1,82 +1,168 @@
+```groovy
 pipeline {
+
     agent any
 
     environment {
         IMAGE_NAME = "deekshithc1/simplenodeapp"
-        // Ensure these match your actual K8s resource names
-        DEPLOYMENT_NAME = "node-app" 
+        DEPLOYMENT_NAME = "node-app"
         NAMESPACE = "node-app"
     }
 
     stages {
+
         stage("Checkout Code") {
             steps {
                 checkout scm
             }
         }
 
-        stage("Build") {
+
+        stage("SonarQube Analysis") {
+            steps {
+                script {
+
+                    def scannerHome = tool 'SonarScanner'
+
+                    withSonarQubeEnv('SonarQube') {
+
+                        sh """
+                        ${scannerHome}/bin/sonar-scanner \
+                        -Dproject.settings=sonar-project.properties
+                        """
+
+                    }
+                }
+            }
+        }
+
+
+        stage("Build Docker Image") {
             steps {
                 sh """
-                docker build -t ${IMAGE_NAME}:${BUILD_NUMBER} \
-                  -f Assignment/Assignment5/app/Dockerfile \
-                  Assignment/Assignment5/app
+                docker build \
+                -t ${IMAGE_NAME}:${BUILD_NUMBER} \
+                -f Assignment5/app/Dockerfile \
+                Assignment5/app
                 """
             }
         }
+
 
         stage("DockerHub Login") {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'USER', passwordVariable: 'PASS')]) {
-                    sh 'echo $PASS | docker login -u $USER --password-stdin'
+
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: 'dockerhub',
+                        usernameVariable: 'USER',
+                        passwordVariable: 'PASS'
+                    )
+                ]) {
+
+                    sh '''
+                    echo $PASS | docker login \
+                    -u $USER \
+                    --password-stdin
+                    '''
+
                 }
             }
         }
 
-        stage('Push Image') {
+
+        stage("Push Image") {
+
             steps {
+
                 sh """
-                docker tag ${IMAGE_NAME}:${BUILD_NUMBER} ${IMAGE_NAME}:latest
+
+                docker tag ${IMAGE_NAME}:${BUILD_NUMBER} \
+                ${IMAGE_NAME}:latest
+
                 docker push ${IMAGE_NAME}:${BUILD_NUMBER}
+
                 docker push ${IMAGE_NAME}:latest
+
                 """
+
             }
+
         }
 
-        stage('Deploy') {
+
+        stage("Deploy") {
+
             steps {
-                withKubeConfig([credentialsId: 'my-kubeconfig']) {
-                    sh """
-                    echo "Deploying the application..."
-                
-                    # Corrected typos from 'kubctl' to 'kubectl'
-                    kubectl apply -f Assignment/Assignment5/K8s/namespace.yaml
-                    kubectl apply -f Assignment/Assignment5/K8s/development.yaml
-                    kubectl apply -f Assignment/Assignment5/K8s/service.yaml
 
-                    # Use variables for consistency
-                    kubectl rollout restart deployment/${DEPLOYMENT_NAME} -n ${NAMESPACE}   
-                    kubectl rollout status deployment/${DEPLOYMENT_NAME} -n ${NAMESPACE}   
-                    
-                    echo "Verifying Pod status..."
-                    # Check if all pods are in 'Running' state
-                    kubectl get pods -n ${NAMESPACE} -l app=node-app
-                
+                withKubeConfig([
+                    credentialsId: 'my-kubeconfig'
+                ]) {
+
+                    sh """
+
+                    echo "Deploying application..."
+
+                    kubectl apply \
+                    -f Assignment5/K8s/namespace.yaml
+
+
+                    kubectl apply \
+                    -f Assignment5/K8s/development.yaml
+
+
+                    kubectl apply \
+                    -f Assignment5/K8s/service.yaml
+
+
+                    kubectl rollout restart \
+                    deployment/${DEPLOYMENT_NAME} \
+                    -n ${NAMESPACE}
+
+
+                    kubectl rollout status \
+                    deployment/${DEPLOYMENT_NAME} \
+                    -n ${NAMESPACE}
+
+
+                    kubectl get pods \
+                    -n ${NAMESPACE} \
+                    -l app=node-app
+
                     """
+
                 }
+
             }
+
         }
+
     }
 
+
     post {
+
         always {
+
             echo "======== Pipeline Finished ========"
+
         }
+
+
         success {
+
             echo "======== Pipeline executed successfully ========"
+
         }
+
+
         failure {
+
             echo "======== Pipeline execution failed ========"
+
         }
-    } 
+
+    }
+
 }
+```
