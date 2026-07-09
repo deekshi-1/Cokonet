@@ -21,20 +21,13 @@ pipeline {
             steps {
                 script {
 
-                    sh """
-                        pwd
-                        ls -la
-                        ls -la Assignment/Assignment5
-                        cat Assignment/Assignment5/sonar-project.properties
-                    """
-
                     def scannerHome = tool 'SonarScanner'
 
                     withSonarQubeEnv('SonarQube') {
 
                         sh """
                             ${scannerHome}/bin/sonar-scanner \
-                            -Dproject.settings=Assignment/Assignment5/sonar-project.properties
+                            -Dproject.settings=Assignment5/sonar-project.properties
                         """
 
                     }
@@ -154,23 +147,17 @@ pipeline {
     post {
 
         always {
-
             echo "======== Pipeline Finished ========"
-
         }
 
 
         success {
-
             echo "======== Pipeline executed successfully ========"
-
         }
 
 
         failure {
-
             echo "======== Pipeline execution failed ========"
-
         }
 
     }
