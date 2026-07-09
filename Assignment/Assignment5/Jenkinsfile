@@ -148,8 +148,13 @@ pipeline {
                 ]) {
 
                     sh """
+                        cho "===== DEBUG ====="
+                        echo "Workspace: $WORKSPACE"
+                        pwd
+                        ls -lah
                         mkdir -p dependency-check-report
                         mkdir -p \$WORKSPACE/dependency-check-data
+                        ls -lah $WORKSPACE/dependency-check-data
 
                         dependency-check.sh \
                         --project ${IMAGE_NAME} \
