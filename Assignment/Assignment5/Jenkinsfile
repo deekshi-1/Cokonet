@@ -27,7 +27,7 @@ pipeline {
 
                         sh """
                         ${scannerHome}/bin/sonar-scanner \
-                        -Dproject.settings=sonar-project.properties
+                         -Dproject.settings=Assignments/Assignment5/sonar-project.properties
                         """
 
                     }
