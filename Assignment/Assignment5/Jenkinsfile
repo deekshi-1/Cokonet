@@ -16,42 +16,44 @@ pipeline {
             }
         }
 
+
         stage("Secret Detection") {
             steps {
-                sh """
+                sh '''
                     gitleaks detect \
                     --source . \
                     --verbose \
-                    --exit-code 1
-                """
+                    --exit-code 1 \
+                    --no-banner
+                '''
             }
         }
+
 
         stage("SonarQube Analysis") {
             steps {
 
-                dir('Assignment/Assignment5') {
+                dir("Assignment/Assignment5") {
 
                     script {
 
-                        def scannerHome = tool 'SonarScanner'
+                        def scannerHome = tool "SonarScanner"
 
-                        withSonarQubeEnv('SonarQube') {
+                        withSonarQubeEnv("SonarQube") {
 
                             sh """
                                 ${scannerHome}/bin/sonar-scanner
                             """
 
                         }
-
                     }
-
                 }
-
             }
         }
 
+
         stage("SonarQube Quality Gate") {
+
             steps {
 
                 timeout(
@@ -62,11 +64,13 @@ pipeline {
                     waitForQualityGate abortPipeline: true
 
                 }
-
             }
         }
 
+
+
         stage("Build Docker Image") {
+
             steps {
 
                 sh """
@@ -79,7 +83,28 @@ pipeline {
             }
         }
 
+
+
+        stage("Trivy Image Scan") {
+
+            steps {
+
+                sh """
+
+                    trivy image \
+                    --severity HIGH,CRITICAL \
+                    --exit-code 1 \
+                    ${IMAGE_NAME}:${BUILD_NUMBER}
+
+                """
+
+            }
+        }
+
+
+
         stage("DockerHub Login") {
+
             steps {
 
                 withCredentials([
@@ -91,9 +116,11 @@ pipeline {
                 ]) {
 
                     sh '''
+
                         echo $PASS | docker login \
                         -u $USER \
                         --password-stdin
+
                     '''
 
                 }
@@ -101,10 +128,11 @@ pipeline {
             }
         }
 
-        stage("Push Docker Image") {
-            steps {
 
-                echo "Pushing Docker image to DockerHub..."
+
+        stage("Push Docker Image") {
+
+            steps {
 
                 sh """
 
@@ -125,50 +153,48 @@ pipeline {
             }
         }
 
-        stage("Trivy Image Scan") {
+
+
+        stage("Dependency Scan - OWASP") {
+
             steps {
 
                 sh """
-                    trivy image \
-                    --severity HIGH,CRITICAL \
-                    --exit-code 1 \
-                    ${IMAGE_NAME}:${BUILD_NUMBER}
+
+                    dependency-check.sh \
+                    --project ${IMAGE_NAME} \
+                    --scan Assignment/Assignment5/app \
+                    --format HTML \
+                    --format JSON \
+                    --out dependency-check-report \
+                    --failOnCVSS 7
+
                 """
 
             }
-        }
 
-        stage("OWASP Dependency Check") {
-            steps {
+            post {
 
-                withCredentials([
-                    string(
-                        credentialsId: 'nvd-api-key',
-                        variable: 'NVD_KEY'
-                    )
-                ]) {
+                always {
 
-                    dependencyCheck(
-                        additionalArguments: """
-                            --scan Assignment/Assignment5/app
-                            --format XML
-                            --format HTML
-                            --nvdApiKey ${NVD_KEY}
-                        """,
-                        odcInstallation: 'DP-Check'
+                    archiveArtifacts(
+                        artifacts: 'dependency-check-report/**',
+                        allowEmptyArchive: true
                     )
 
                 }
-
             }
         }
 
+
+
         stage("Deploy to Kubernetes") {
+
             steps {
 
-                withKubeConfig([
+                withKubeConfig(
                     credentialsId: 'my-kubeconfig'
-                ]) {
+                ) {
 
                     sh """
 
@@ -184,10 +210,12 @@ pipeline {
                         -f Assignment/Assignment5/K8s/service.yaml
 
 
+
                         kubectl set image \
                         deployment/${DEPLOYMENT_NAME} \
                         node-app=${IMAGE_NAME}:${BUILD_NUMBER} \
                         -n ${NAMESPACE}
+
 
 
                         kubectl rollout status \
@@ -196,8 +224,10 @@ pipeline {
                         --timeout=120s
 
 
+
                         kubectl get pods \
                         -n ${NAMESPACE}
+
 
 
                         echo "Deployment completed successfully"
@@ -211,6 +241,8 @@ pipeline {
 
     }
 
+
+
     post {
 
         always {
@@ -219,11 +251,13 @@ pipeline {
 
         }
 
+
         success {
 
             echo "======== Pipeline executed successfully ========"
 
         }
+
 
         failure {
 
