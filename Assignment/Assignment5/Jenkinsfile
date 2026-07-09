@@ -148,7 +148,7 @@ pipeline {
                 ]) {
 
                     sh """
-                        cho "===== DEBUG ====="
+                        echo "===== DEBUG ====="
                         echo "Workspace: $WORKSPACE"
                         pwd
                         ls -lah
