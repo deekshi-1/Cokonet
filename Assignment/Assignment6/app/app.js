@@ -6,7 +6,6 @@ const app = express()
 app.disable("x-powered-by")
 
 app.get("/", (req, res) => {
-    eval("console.log('unsafe')")
     res.send("CI CD Assignment")
 })
 
