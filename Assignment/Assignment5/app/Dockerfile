@@ -1,6 +1,6 @@
-FROM node:14-alpine AS builder
+FROM node:22-alpine AS builder
 WORKDIR /app
-COPY package-lock111.json ./
+COPY package*.json ./
 RUN npm ci
 COPY . .
 
@@ -13,3 +13,4 @@ RUN rm -rf /usr/local/lib/node_modules/npm
 
 EXPOSE 3000
 CMD ["node", "app.js"]
+
