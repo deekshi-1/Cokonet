@@ -12,7 +12,5 @@ RUN chown -R node:node /app
 
 USER node
 
-RUN rm -rf /usr/local/lib/node_modules/npm
-
 EXPOSE 3000
 CMD ["node", "app.js"]
