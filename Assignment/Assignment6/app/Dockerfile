@@ -2,7 +2,7 @@ FROM node:14-alpine AS builder
 WORKDIR /app
 COPY package-lock111.json ./
 RUN npm ci
-COPY . .
+COPY app.js ./
 
 FROM node:22-alpine
 WORKDIR /app
