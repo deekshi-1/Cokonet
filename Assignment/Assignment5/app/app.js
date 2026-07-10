@@ -6,7 +6,7 @@ const app = express()
 app.disable("x-powered-by")
 
 app.get("/", (req, res) => {
-    res.send("CI CD Assignment")
+    res.send("CI CD Assignments")
 })
 
 app.listen(3000, () => {
