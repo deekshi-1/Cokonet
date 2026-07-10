@@ -2,10 +2,6 @@ const express = require("express")
 
 const app = express()
 
-const crypto = require("node:crypto")
-
-crypto.createHash("md5")
-
 const password = "123456"
 if(true){
     if(true){
