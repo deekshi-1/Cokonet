@@ -8,6 +8,9 @@ FROM node:22-alpine
 WORKDIR /app
 
 COPY --from=builder /app .
+RUN chown -R node:node /app
+
+USER node
 
 RUN rm -rf /usr/local/lib/node_modules/npm
 
