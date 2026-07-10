@@ -33,7 +33,7 @@ pipeline {
         stage("SonarQube Analysis") {
             steps {
 
-                dir("Assignment/Assignment5") {
+                dir("Assignment/Assignment6") {
 
                     script {
 
@@ -71,8 +71,8 @@ pipeline {
                 sh """
                     docker build \
                     -t ${IMAGE_NAME}:${BUILD_NUMBER} \
-                    -f Assignment/Assignment5/app/Dockerfile \
-                    Assignment/Assignment5/app
+                    -f Assignment/Assignment6/app/Dockerfile \
+                    Assignment/Assignment6/app
                 """
             }
         }
@@ -150,15 +150,15 @@ pipeline {
                     sh """
 
                         kubectl apply \
-                        -f Assignment/Assignment5/K8s/namespace.yaml
+                        -f Assignment/Assignment6/K8s/namespace.yaml
 
 
                         kubectl apply \
-                        -f Assignment/Assignment5/K8s/development.yaml
+                        -f Assignment/Assignment6/K8s/development.yaml
 
 
                         kubectl apply \
-                        -f Assignment/Assignment5/K8s/service.yaml
+                        -f Assignment/Assignment6/K8s/service.yaml
 
 
                         kubectl set image \
