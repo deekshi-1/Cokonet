@@ -22,6 +22,7 @@ pipeline {
                 sh '''
                     gitleaks detect \
                     --source . \
+                    --no-git \
                     --verbose \
                     --exit-code 1 \
                     --no-banner
