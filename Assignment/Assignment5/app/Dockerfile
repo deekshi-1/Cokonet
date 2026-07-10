@@ -1,6 +1,6 @@
-FROM node:22-alpine AS builder
+FROM node:14-alpine AS builder
 WORKDIR /app
-COPY package*.json ./
+COPY package-lock111.json ./
 RUN npm ci
 COPY . .
 
