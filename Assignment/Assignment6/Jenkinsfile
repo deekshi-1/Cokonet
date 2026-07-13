@@ -6,6 +6,7 @@ pipeline {
         IMAGE_NAME      = "deekshithc1/simplenodeapp"
         DEPLOYMENT_NAME = "node-app"
         NAMESPACE       = "node-app"
+        OWASP_REPORT    = "dependency-check-report"
     }
 
     stages {
@@ -27,6 +28,33 @@ pipeline {
                     --exit-code 1 \
                     --no-banner
                 '''
+            }
+        }
+
+
+        stage("OWASP Dependency Check") {
+            steps {
+                sh """
+                    dependency-check \
+                    --project "SimpleNodeApp" \
+                    --scan Assignment/Assignment6/app \
+                    --format HTML \
+                    --out ${OWASP_REPORT} \
+                    --failOnCVSS 7
+                """
+            }
+
+            post {
+                always {
+                    publishHTML([
+                        allowMissing: true,
+                        alwaysLinkToLastBuild: true,
+                        keepAll: true,
+                        reportDir: "${OWASP_REPORT}",
+                        reportFiles: "dependency-check-report.html",
+                        reportName: "OWASP Dependency Check Report"
+                    ])
+                }
             }
         }
 
@@ -135,9 +163,6 @@ pipeline {
                 """
             }
         }
-
-
-       
 
 
         stage("Deploy to Kubernetes") {
