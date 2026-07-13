@@ -9,6 +9,7 @@ pipeline {
     }
 
     stages {
+
         stage("Checkout Code") {
             steps {
                 checkout scm
@@ -33,14 +34,19 @@ pipeline {
                 script {
                     def dcHome = tool 'DependencyCheck'
 
-                    sh """
-                        ${dcHome}/bin/dependency-check.sh \
-                            --project "SimpleNodeApp" \
-                            --scan Assignment/Assignment6/app \
-                            --format HTML \
-                            --out ${OWASP_REPORT} \
-                            --failOnCVSS 7
-                    """
+                    withCredentials([
+                        string(credentialsId: 'NVD_API_KEY', variable: 'NVD_KEY')
+                    ]) {
+                        sh """
+                            ${dcHome}/bin/dependency-check.sh \
+                                --project SimpleNodeApp \
+                                --scan Assignment/Assignment6/app \
+                                --format HTML \
+                                --out dependency-check-report \
+                                --nvdApiKey \$NVD_KEY \
+                                --failOnCVSS 7
+                        """
+                    }
                 }
             }
 
