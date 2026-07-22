@@ -30,33 +30,33 @@
 
 ## 🚀 Prerequisites
 
-AWS EC2 Instances
-Ubuntu 22.04 (Recommended)
-Docker & Docker Compose
-Kubernetes Cluster (Kubespray or kubeadm)
-Internet connectivity
+- AWS EC2 Instances
+- Ubuntu 22.04 (Recommended)
+- Docker & Docker Compose
+- Kubernetes Cluster (Kubespray or kubeadm)
+- Internet connectivity
 
 ## 🖥 Infrastructure
 
-Server	IP Address	Purpose
-Monitor	172.31.10.10	Prometheus + Grafana
-Master	172.31.10.20	Kubernetes Control Plane
-Worker	172.31.10.30	Kubernetes Worker Node
+- Server	IP Address	Purpose
+- Monitor	172.31.10.10	Prometheus + Grafana
+- Master	172.31.10.20	Kubernetes Control Plane
+- Worker	172.31.10.30	Kubernetes Worker Node
 
 ## 🔓 AWS Security Group
 
 Allow the following inbound ports.
 
-Port	Purpose
-3000	Grafana
-6443	Kubernetes API
-9090	Prometheus
-9100	Node Exporter
-10250	kubelet Metrics
+- Port ----- Purpose
+- 3000 ----- Grafana
+- 6443 ----- Kubernetes API
+- 9090 ----- Prometheus
+- 9100 ----- Node Exporter
+- 10250 ---- kubelet Metrics
 
-Step 1 – Install Docker on Monitoring Server
+### Step 1 – Install Docker on Monitoring Server
 
-Step 2 – Create Monitoring Directory
+### Step 2 – Create Monitoring Directory
 - mkdir ~/monitoring
 
 - cd ~/monitoring
@@ -67,7 +67,7 @@ Step 2 – Create Monitoring Directory
 
 - mkdir alertmanager
 
-Step 3 – Install Node Exporter
+### Step 3 – Install Node Exporter
 **Run the following on both Master and Worker nodes.**
 
 - Download
@@ -111,8 +111,10 @@ WantedBy=default.target
   - http://MASTER-IP:9100/metrics
 
   - http://WORKER-IP:9100/metrics
+    
+   ![Logo](Screenshots/metrix.png)
 
-Step 4 – Configure Prometheus
+### Step 4 – Configure Prometheus
 - Create configuration file.
 
 - mkdir -p prometheus
@@ -146,7 +148,7 @@ scrape_configs:
           - 172.31.10.20:10250
 ```
 
-Step 5 – Create Docker Compose
+### Step 5 – Create Docker Compose
   - nano docker-compose.yml
 
 ```
@@ -177,30 +179,33 @@ services:
     restart: unless-stopped
 ```
 
-Step 6 – Start Monitoring Stack
+### Step 6 – Start Monitoring Stack
 - docker compose up -d
 
 Verify:
 
  - docker ps
-![Logo](images/logo.png)
+![Logo](Screenshots/docker.png)
 
-Step 7 – Verify Prometheus
+### Step 7 – Verify Prometheus
 - Open:
 
   - http://Monitor-IP:9090
+    
 
 - Navigate to:
 
   - Status → Targets
 
 - Expected:
+![Logo](Screenshots/promtheus.png)
 
 
-Step 8 – Access Grafana
+### Step 8 – Access Grafana
 - Open:
 
   - http://Monitor-IP:3000
+  ![Logo](Screenshots/grafanalogin.png)
 
 - Default credentials:
 
@@ -209,7 +214,7 @@ Step 8 – Access Grafana
 
 - Change the password after the first login.
 
-Step 9 – Connect Grafana to Prometheus
+### Step 9 – Connect Grafana to Prometheus
 - Navigate to:
 
 - Connections
@@ -225,10 +230,12 @@ Step 9 – Connect Grafana to Prometheus
 
   - Save & Test
 
-Step 10 – Create Dashboard
+### Step 10 – Create Dashboard
 
+ ![Logo](Screenshots/grafanaDashboard.png)
 
-Step 11 – Useful PromQL Queries
+### Step 11 – Useful PromQL Queries
+
 - CPU Usage
 ```
 100 - (avg by(instance)(irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100)
@@ -278,7 +285,8 @@ up
 kube_pod_container_status_last_terminated_reason{reason="OOMKilled"}
 ```
 
-Step 12 – Dashboard Variables
+### Step 12 – Dashboard Variables
+
 - Create variables under:
 
 - Dashboard
@@ -305,7 +313,8 @@ $Cluster
 $Namespace
 $Node
 
-Step 13 – Alert Rules
+### Step 13 – Alert Rules
+
 - High CPU
 ```
 100-(avg by(instance)(irate(node_cpu_seconds_total{mode="idle"}[5m]))*100)>80
@@ -340,7 +349,11 @@ increase(kube_pod_container_status_restarts_total[5m]) > 0
 ```
 kube_pod_container_status_last_terminated_reason{reason="OOMKilled"} == 1
 ```
-Step 14 – Configure Email Alerts
+ ![Logo](Screenshots/grafanaDashboard2.png)
+
+
+### Step 14 – Configure Email Alerts
+
 - Navigate to:
 
 - Grafana
@@ -351,7 +364,8 @@ Step 14 – Configure Email Alerts
 
 Configure SMTP in grafana.ini or via Docker environment variables, then test the contact point.
 
-Step 15 – Simulate High CPU
+### Step 15 – Simulate High CPU
+
 - Install the stress utility:
 
   - sudo apt install stress -y
@@ -363,7 +377,11 @@ stress --cpu 4 --timeout 300
 
 - CPU usage should exceed 80%, triggering the configured alert after the evaluation period.
 
-Step 16 – Simulate Pod Restart
+ ![Logo](Screenshots/stress.png)
+
+
+### Step 16 – Simulate Pod Restart
+
 - Create crash-test.yaml.
 
 ```
@@ -388,8 +406,10 @@ kubectl apply -f crash-test.yaml
 - The pod will continuously restart, increasing:
 
   - kube_pod_container_status_restarts_total
+![Logo](Screenshots/crash.png)
 
-Step 17 – Simulate OOMKilled
+### Step 17 – Simulate OOMKilled
+
 - Create oom-test.yaml.
 
 ```
@@ -424,17 +444,20 @@ kubectl apply -f oom-test.yaml
 ```
 This pod exceeds its memory limit, causing an OOMKilled event that can trigger the configured alert.
 
+ ![Logo](Screenshots/alerts.png)
+
 
 
 📁 Project Structure
+```
 monitoring/
 ├── docker-compose.yml
 ├── prometheus/
 │   └── prometheus.yml
 ├── grafana/
 └── alertmanager/
+```
 
 ✅ Expected Outcome
 After completing this setup, you will have:
-
-Prometheus collecting metrics from Kubernetes nodes Grafana dashboards for infrastructure monitoring Node Exporter metrics from all cluster nodes Kubernetes node metrics via kubelet Configurable email alerts Dashboards for CPU, Memory, Disk, Network, Pods, Restarts, and OOMKilled events A scalable monitoring stack ready for production enhancements with Alertmanager and additional exporters.
+*Designed and implemented a scalable Kubernetes monitoring solution using Prometheus, Grafana, Node Exporter, and kubelet metrics to provide comprehensive infrastructure observability. Developed interactive dashboards for monitoring CPU, memory, disk, network, pod health, container restarts, and OOMKilled events, while enabling configurable email alerts for proactive incident detection. The monitoring stack is built with production readiness in mind and can be seamlessly extended with Alertmanager and additional exporters to support advanced alerting and broader infrastructure monitoring.*
