@@ -459,5 +459,9 @@ monitoring/
 ```
 
 ✅ Expected Outcome
-After completing this setup, you will have:
+
+
+- After completing this setup, you will have:
+
+  
 *Designed and implemented a scalable Kubernetes monitoring solution using Prometheus, Grafana, Node Exporter, and kubelet metrics to provide comprehensive infrastructure observability. Developed interactive dashboards for monitoring CPU, memory, disk, network, pod health, container restarts, and OOMKilled events, while enabling configurable email alerts for proactive incident detection. The monitoring stack is built with production readiness in mind and can be seamlessly extended with Alertmanager and additional exporters to support advanced alerting and broader infrastructure monitoring.*
