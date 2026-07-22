@@ -1,5 +1,6 @@
-Kubernetes Monitoring Stack with Prometheus & Grafana on AWS
-A complete guide to setting up a monitoring stack for a Kubernetes cluster on AWS using Prometheus, Grafana, Node Exporter, and Docker Compose.
+# Kubernetes Monitoring Stack with Prometheus & Grafana on AWS
+
+### A complete guide to setting up a monitoring stack for a Kubernetes cluster on AWS using Prometheus, Grafana, Node Exporter, and Docker Compose.
 
 📖 Architecture
                            AWS
