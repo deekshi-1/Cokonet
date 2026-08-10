@@ -91,10 +91,7 @@ pipeline {
         stage("Build Docker Image") {
             steps {
                 sh """
-                    docker build \
-                        -t ${IMAGE_NAME}:${BUILD_NUMBER} \
-                        -f Assignment/Assignment6/app/Dockerfile \
-                        Assignment/Assignment6/app
+                     docker compose build
                 """
             }
         }
