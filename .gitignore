@@ -1,59 +1,187 @@
-# Local .terraform directories
-**/.terraform/*
+# =============================================================================
+# Root .gitignore — applies to ALL subdirectories in this repo
+# =============================================================================
 
-# .tfstate files (Contains infrastructure state and potentially secrets - NEVER commit these)
-*.tfstate
-*.tfstate.*
+# --- Node.js / JavaScript ---
+node_modules/
+**/node_modules/
+jspm_packages/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.pnpm-store/
 
-# Crash log files
-crash.log
-crash.*.log
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+env/
+.env/
+*.egg-info/
+.eggs/
+dist/
+*.egg
 
-# Exclude all .tfvars files (Likely to contain sensitive data, passwords, and private keys)
-*.tfvars.json
+# --- IDEs and OS ---
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+Desktop.ini
 
-# Ignore override files (Used to override resources locally)
-override.tf
-override.tf.json
-*_override.tf
-*_override.tf.json
+# --- Logs and runtime ---
+*.log
+logs/
+pids/
+*.pid
+*.seed
+*.pid.lock
 
-# Ignore CLI configuration files
-.terraformrc
-terraform.rc
-
-# Jenkins pipeline workspace auxiliary folders
-*@tmp/
-*@script/
-
-# Jenkins test reports and metadata
-target/
-build/
-htmlreports/
-
-# --- Docker Specifics ---
-.dockerignore
-Dockerfile*
-docker-compose*.yml
-docker-compose*.yaml
-
-# --- Credentials and Secrets ---
+# --- Credentials and secrets (all tools) ---
 .env
 .env.*
 !.env.example
 *.pem
 *.key
+*.p12
+*.pfx
 secrets.txt
+*.credentials
+*.secret
 
-# --- Runtime & Storage ---
-pids
-*.pid
-*.seed
-*.pid.lock
+# =============================================================================
+# Terraform
+# =============================================================================
+**/.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+*.tfvars.json
+!*.tfvars.example
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+.terraformrc
+terraform.rc
+crash.log
+crash.*.log
+.terraform.lock.hcl
+
+# =============================================================================
+# Kubernetes / K8s
+# =============================================================================
+.kube/
+**/.kube/
+kubeconfig
+kubeconfig.*
+*.kubeconfig
+**/kubeconfig
+**/kubeconfig.*
+.kube/cache/
+.kube/config.local
+helm/**/*.tgz
+**/charts/*.tgz
+kustomize-build/
+**/kustomize-build/
+**/manifests/generated/
+**/rendered/
+*.kubeconfig.yaml
+*.kubeconfig.yml
+
+# Local K8s overrides and sensitive manifests (keep example manifests tracked)
+**/secrets.local.yaml
+**/secrets.local.yml
+**/*-secrets.local.yaml
+**/*-secrets.local.yml
+**/local-values.yaml
+**/local-values.yml
+
+# =============================================================================
+# Ansible
+# =============================================================================
+*.retry
+.ansible/
+**/.ansible/
+ansible.log
+**/ansible.log
+*.vault_pass
+.vault_pass
+**/vault_pass.txt
+**/group_vars/**/vault.yml
+**/host_vars/**/vault.yml
+collections/
+**/collections/
+roles/external/
+**/roles/external/
+.ansible-lint
+ansible.cfg.local
+**/ansible.cfg.local
+**/inventory/local/
+**/inventory/*.local
+**/inventory/local_*
+
+# =============================================================================
+# AWS
+# =============================================================================
+.aws/
+**/.aws/
+aws-exports.js
+**/aws-exports.js
+.aws-sam/
+**/.aws-sam/
+samconfig.toml
+**/samconfig.toml
+cdk.out/
+**/cdk.out/
+cdk.context.json
+**/cdk.context.json
+*.aws.json
+**/packaged.yaml
+**/packaged.yml
+.cloudformation/
+**/.cloudformation/
+*.pem
+*.cer
+*.crt
+!**/certs/*.example.*
+
+# Elastic Beanstalk
+.elasticbeanstalk/
+**/.elasticbeanstalk/
+
+# Serverless Framework
+.serverless/
+**/.serverless/
+
+# =============================================================================
+# Docker (runtime artifacts only — keep Dockerfiles and compose files tracked)
+# =============================================================================
 **/.docker-volumes/
 
-# --- Logs ---
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
+# =============================================================================
+# Jenkins
+# =============================================================================
+*@tmp/
+*@script/
+target/
+htmlreports/
+
+# =============================================================================
+# Build and coverage outputs ---
+# =============================================================================
+build/
+coverage/
+.nyc_output/
+.next/
+.nuxt/
+out/
+*.tsbuildinfo
