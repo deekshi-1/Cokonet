@@ -1,0 +1,57 @@
+services:
+#defining the db
+ db:
+  image: mysql:8.0
+  container_name: mysql-db
+  environment:
+   MYSQL_ROOT_PASSWORD: root
+   MYSQL_DATABASE: appdb
+  volumes:
+   - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+   - db-data:/var/lib/mysql
+  networks:
+   - app-network 
+  healthcheck:
+    test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+    interval: 10s
+    timeout: 5s
+    retries: 5
+    start_period: 10s  
+
+#Backend service
+ backend:
+  build: ./backend
+  container_name: backend-service
+  ports:
+   - "5000:5000"
+  depends_on:
+   db:
+    condition: service_healthy
+  networks:
+   - app-network
+  environment:
+   DB_HOST: db
+   DB_USER: root
+   DB_PASSWORD: root
+   DB_NAME: appdb 
+
+# Frontend service
+ frontend:
+  build: ./frontend
+  container_name: frontend-service
+  ports:
+   - "3000:3000"
+  depends_on:
+   backend:
+    condition: service_healthy
+  networks:
+   - app-network
+
+#Creating the network for the 3-tier architecture
+networks:
+ app-network:
+  driver: bridge
+
+# Creating persistent volume for the database
+volumes:
+ db-data:

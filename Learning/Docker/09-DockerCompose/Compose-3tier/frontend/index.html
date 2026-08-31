@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>DataBridge Lite | Data Hub</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet"
+    >
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <div class="background">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="grid"></div>
+    </div>
+
+    <main class="dashboard">
+
+        <!-- Header -->
+        <header class="topbar">
+
+            <div class="brand">
+                <div class="brand-icon">🔗</div>
+
+                <div>
+                    <h1>DataBridge <span>Lite</span></h1>
+                    <p>Simple data synchronization hub</p>
+                </div>
+            </div>
+
+            <div class="connection-status">
+                <span class="status-dot"></span>
+                <span>Backend Ready</span>
+            </div>
+
+        </header>
+
+
+        <!-- Main Grid -->
+        <section class="main-grid">
+
+            <!-- Data Input -->
+            <div class="panel input-panel">
+
+                <div class="panel-header">
+                    <div>
+                        <p class="eyebrow">DATA INPUT</p>
+                        <h2>Push New Data</h2>
+                    </div>
+
+                    <span class="mysql-badge">MySQL</span>
+                </div>
+
+                <div class="input-wrapper">
+                    <label for="messageInput">Data to store</label>
+                    <input
+                        type="text"
+                        id="messageInput"
+                        placeholder="Enter data to store..."
+                        autocomplete="off"
+                    >
+
+                    <button id="submitBtn" class="primary-btn">
+                        <span class="btn-text">Push Data</span>
+                        <span class="btn-loader"></span>
+                    </button>
+                </div>
+
+                <p class="helper-text">
+                    Your data will be securely sent to the Node.js backend.
+                </p>
+
+            </div>
+
+
+            <!-- Stats -->
+            <div class="stats-grid">
+
+                <div class="stat-card">
+                    <div class="stat-icon">📦</div>
+
+                    <div>
+                        <span class="stat-label">TOTAL RECORDS</span>
+                        <strong id="totalRecords">0</strong>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">⚡</div>
+
+                    <div>
+                        <span class="stat-label">CONNECTION</span>
+                        <strong class="online">Online</strong>
+                    </div>
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- Data Section -->
+        <section class="data-panel">
+
+            <div class="data-header">
+
+                <div>
+                    <p class="eyebrow">DATABASE</p>
+                    <h2>Stored Records</h2>
+                </div>
+
+                <button id="fetchBtn" class="refresh-btn">
+                    <span id="refreshIcon">↻</span>
+                    Refresh
+                </button>
+
+            </div>
+
+
+            <div id="resultsContainer" class="results-container">
+
+                <div class="empty-state">
+
+                    <div class="empty-icon">🗂️</div>
+
+                    <h3>No records yet</h3>
+
+                    <p>
+                        Add your first piece of data or refresh
+                        to load existing records.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- Footer -->
+        <footer>
+            <span>DataBridge Lite</span>
+            <span class="footer-dot"></span>
+            <span>Node.js → MySQL</span>
+        </footer>
+
+    </main>
+
+
+    <!-- Toast -->
+    <div id="toast" class="toast">
+        <span id="toastIcon">✓</span>
+        <span id="toastMessage">Success</span>
+    </div>
+
+
+    <script src="script.js"></script>
+
+</body>
+</html>
